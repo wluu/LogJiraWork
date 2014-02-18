@@ -9,10 +9,10 @@ Setup
 3. In the job.js file, you want to change 'TIME_FILE' to point to a different file; this file will store data about your Jira task
 4. Save and that's it!
 
-Note: Since this script will be used from the terminal, it'll be more useful to create aliases with this script (see below for more commands) e.g.
+Note: Since this script will be used from the terminal, it'll be more useful to create an alias with this script (see below for more commands) e.g.
 
 ```javascript
-alias startTime='node ~/fromGit/LogJiraWork/job.js start'
+alias jiraTrack='node ~/fromGit/LogJiraWork/job.js'
 ```
 
 Commands
