@@ -88,7 +88,7 @@ if(args.start){
         var jobs    = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
             lastJob = jobs.data[jobs.data.length - 1];
 
-        print(JSON.stringify(lastJob, null, '\t'));
+        print(JSON.stringify(lastJob, null, 4));
 
     } catch(err) {
 
@@ -104,7 +104,7 @@ if(args.start){
     fs.unlinkSync(TIME_FILE);
     print("Successfully deleted.")
 } else {
-    print('What is ' + arg + '???');
+    print('Please specify either --start, --stop, --clean or --last as a flag.');
 }
 
 // returns a Jira ready format to log work e.g. 3h 30m
