@@ -1,7 +1,6 @@
 var args = require('minimist')(process.argv.slice(2)),
     fs   = require('fs'),
-    path = require('path'),
-    exec = require('child_process').exec;
+    path = require('path');
 
 var TIME_FILE = path.join('\/Users', 'wluu', 'Desktop', 'time.json');
 
