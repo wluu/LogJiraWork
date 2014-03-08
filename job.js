@@ -3,7 +3,13 @@ var args = require('minimist')(process.argv.slice(2)),
     fs   = require('fs'),
     path = require('path');
 
-var TIME_FILE = path.join('\/Users', 'wluu', 'Desktop', 'time.json');
+var config;
+try {
+    config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.js')));
+} catch(e) {
+    // We don't care, because we default to current dir anyway
+}
+var TIME_FILE = config.path || process.cwd();
 
 if(args.start){
     var jobs = {
@@ -103,8 +109,20 @@ if(args.start){
     // Unlink the stored file
     fs.unlinkSync(TIME_FILE);
     print("Successfully deleted.")
+} else if(args['set-time-path']) {
+    var path = args['set-time-path'];
+    if(path.toString() != "true" && path.substr(path.length - 5) == '.json'){
+        config.path = args['set-time-path'];
+        fs.writeFileSync(path.join(__dirname, 'config.js'), JSON.stringify(config, null, 4));
+        print("Path successfully changed.");
+    } else {
+        print("Please enter a path in the format --set-time-path=/path/you/want.json");
+    }
+} else if(args['get-time-path']) {
+    print('Logs will be saved to ' + TIME_FILE);
 } else {
     print('Please specify either --start, --stop, --clean or --last as a flag.');
+    print('You may also edit the logging path with --set-time-path and --get-time-path');
 }
 
 // returns a Jira ready format to log work e.g. 3h 30m
