@@ -1,0 +1,31 @@
+{
+	"name": "log-work",
+	"version": "1.0.0",
+	"description": "A crude method for keeping track of the amount of time you worked on a Jira task. And, returns the tracked work time in Jira format.",
+	"author": {
+		"name": "Wilson Luu",
+		"email": "wluu@appcelerator.com"
+	},
+	"contributors": [
+		{
+			"name": "Isaac Whitfield",
+			"email": "iwhitfield@appcelerator.com"
+		}
+	],
+	"repository" :{
+		"type"  : "git",
+		"url"   : "http://github.com/wluu/LogJiraWork.git"
+	},
+	"bin": {
+		"jiraTrack" : "job.js"
+	},
+	"bugs": {
+		"url": "https://github.com/wluu/LogJiraWork/issues"
+	},
+	"main": "job",
+	"readmeFilename": "README.md",
+	"preferGlobal": "true",
+	"dependencies": {
+		"minimist":"0.0.7"
+	}
+}
