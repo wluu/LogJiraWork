@@ -73,7 +73,7 @@ if(args.start){
         timeSlice = getTimeSlice(new Date());
 
     var lastJob         = jobs.data.length - 1,
-        lastJob              = jobs.data[lastJob],
+        lastJob              = jobs.data[lastJob];
         lastJob.endMs        = endMs,
         lastJob.elapsed      = endMs - lastJob.startMs,
         lastJob.jira         = getJiraFormat(lastJob.elapsed),
