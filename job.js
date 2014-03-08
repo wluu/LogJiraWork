@@ -110,15 +110,30 @@ if(args.start){
 // returns a Jira ready format to log work e.g. 3h 30m
 function getJiraFormat(ms){
     var x = ms / 1000;
-        seconds = Math.floor(x % 60);
+        // In case we need it
+        // seconds = Math.floor(x % 60);
         x /= 60;
-        minutes = Math.floor(x % 60);
+        minutes = Math.round(x % 60);
         x /= 60;
         hours = Math.floor(x % 24);
         x /= 24;
         days = Math.floor(x % 7);
         x /= 7;
         weeks = Math.floor(x);
+
+    // Rounding normalization
+    if(minutes == 60){
+        minutes = 0;
+        hours++;
+    }
+    if(hours == 24){
+        hours = 0;
+        days++;
+    }
+    if(days == 7){
+        days = 0;
+        weeks++;
+    }
 
     var ret = (weeks ? weeks + 'w ' : '') + (days ? days + 'd ' : '') + (hours ? hours + 'h ' : '') + (minutes ? minutes + 'm' : '');
     return ret != '' ? ret : (ms + 'ms too small to process.');
