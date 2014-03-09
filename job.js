@@ -1,15 +1,25 @@
 #!/usr/bin/env node
 var args = require('minimist')(process.argv.slice(2)),
+    exec = require('shelljs').exec,
     fs   = require('fs'),
     path = require('path');
 
+var CONFIG_FILE = path.join(__dirname, 'config.js');
+
+var stat = fs.statSync(CONFIG_FILE);
+if(!canWrite(process.uid === stat.uid, process.gid === stat.gid, stat.mode)) {
+    exec('sudo chmod 777 ' + CONFIG_FILE, {
+        async:false
+    });
+}
+
 var config;
 try {
-    config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.js')));
+    config = JSON.parse(fs.readFileSync(CONFIG_FILE));
 } catch(e) {
     // We don't care, because we default to current dir anyway
 }
-var TIME_FILE = config.path || process.cwd();
+var TIME_FILE = config.path || path.join(process.cwd(), 'time.json');
 
 if(args.start){
     var jobs = {
@@ -113,7 +123,7 @@ if(args.start){
     var path = args['set-time-path'];
     if(path.toString() != "true" && path.substr(path.length - 5) == '.json'){
         config.path = args['set-time-path'];
-        fs.writeFileSync(path.join(__dirname, 'config.js'), JSON.stringify(config, null, 4));
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 4));
         print("Path successfully changed.");
     } else {
         print("Please enter a path in the format --set-time-path=/path/you/want.json");
@@ -155,6 +165,14 @@ function getJiraFormat(ms){
 
     var ret = (weeks ? weeks + 'w ' : '') + (days ? days + 'd ' : '') + (hours ? hours + 'h ' : '') + (minutes ? minutes + 'm' : '');
     return ret != '' ? ret : (ms + 'ms too small to process.');
+}
+
+// Check if file is writable
+function canWrite(owner, inGroup, mode) {
+  return owner && (mode & 00200) || // User is owner and owner can write.
+         inGroup && (mode & 00020) || // User is in group and group can write.
+         (mode & 00002); // Anyone can write.
+
 }
 
 // returns date and time in human readable format

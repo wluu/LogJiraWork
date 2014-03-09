@@ -26,6 +26,7 @@
 	"readmeFilename": "README.md",
 	"preferGlobal": "true",
 	"dependencies": {
-		"minimist":"0.0.7"
+		"minimist":"0.0.7",
+		"shelljs":"0.2.6"
 	}
 }
