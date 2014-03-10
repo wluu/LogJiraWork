@@ -1,5 +1,5 @@
 {
-	"name": "log-work",
+	"name": "jiratrack",
 	"version": "1.0.0",
 	"description": "A crude method for keeping track of the amount of time you worked on a Jira task. And, returns the tracked work time in Jira format.",
 	"author": {
@@ -17,7 +17,7 @@
 		"url"   : "http://github.com/wluu/LogJiraWork.git"
 	},
 	"bin": {
-		"jiraTrack" : "job.js"
+		"jiratrack" : "job.js"
 	},
 	"bugs": {
 		"url": "https://github.com/wluu/LogJiraWork/issues"
