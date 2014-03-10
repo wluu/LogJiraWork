@@ -130,6 +130,9 @@ if(args.start){
     }
 } else if(args['get-time-path']) {
     print('Logs will be saved to ' + TIME_FILE);
+} else if(args['set-default-path']) {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({}, null, 4));
+    print('The logging path has been changed to the current working directory.');
 } else {
     print('Please specify either --start, --stop, --clean or --last as a flag.');
     print('You may also edit the logging path with --set-time-path and --get-time-path');
