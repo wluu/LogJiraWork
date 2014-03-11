@@ -68,6 +68,23 @@ Sets the path that jiratrack should log out to e.g.
 $ jiratrack --set-time-path=/Users/User/Desktop/tracker.json
 ```
 
+### set-default-path
+Sets the path that jiratrack should use to be the current working directory
+
+```
+$ jiratrack --set-default-path
+
+Example:
+
+$ pwd
+/Users/iwhitfield
+$ jiratrack --get-default-path
+Logs will be saved to /Users/iwhitfield/time.json
+$ cd /Users/iwhitfield/Desktop
+$ jiratrack --get-time-path
+Logs will be saved to /Users/iwhitfield/Desktop/time.json
+```
+
 ### get-time-path
 Returns the current path that jiratrack is using to log out to
 
