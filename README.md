@@ -2,9 +2,11 @@ LogJiraWork
 ===========
 A crude method for keeping track of the amount of time you worked on a Jira task. And, returns the tracked work time in Jira format.
 
+Also, because I don't like wasting post-its.
+
 Setup
 =====
-Make sure you have node.js installed on your machine; this script has only been tested on Mavericks (10.9.1) with node.js (v0.10.13 & v0.10.26)
+Make sure you have node.js installed on your machine; this script has only been tested on Mavericks (10.9.2) with node.js (v0.10.13 & v0.10.26)
 
 There are a couple of ways to use this module on your machine, with the simplest being installing as a global node module. This is pretty easy to do:
 
@@ -14,13 +16,19 @@ $ sudo npm install -g wluu/LogJiraWork
 
 You then access the module just by running `jiratrack`.
 
-An alternate way is to use the module locally;
+An alternate way is to:
 
-1. Clone this repo to your machine or copy and paste the contents from LogJiraWork/job.js to your machine
-2. In the job.js file, you want to change 'TIME_FILE' to point to a different file; this file will store data about your Jira task
-3. Save and that's it!
+1. Clone this repo to your machine
+2. Globally install the repo:
 
-You then need to access via `node job.js`. You can substitute "jiratrack" for "node job.js" below.
+```$ sudo npm install -g LogJiraWork/```
+
+or inside the repo
+
+```$ sudo npm install -g .```
+
+Then, start using this module by running `jiratrack`.
+
 
 Commands
 ========
@@ -34,7 +42,42 @@ Starts the job timer e.g.
 
 ```javascript
 $ jiratrack --start
-Started timer at 2/18/2014;00:59:40
+Started timer at Tue Mar 11 2014 22:12:08 GMT-0700 (PDT)
+```
+
+### pause
+Pause the job timer.
+
+**Note:** Can only be used after calling the --start flag or the --resume flag.
+
+```javascript
+$ jiratrack --start
+Started timer at Tue Mar 11 2014 22:30:04 GMT-0700 (PDT)
+
+$ jiratrack --pause
+Pausing timer at Tue Mar 11 2014 22:42:05 GMT-0700 (PDT)
+
+$ jiratrack --resume
+Resuming timer at Tue Mar 11 2014 22:43:13 GMT-0700 (PDT)
+
+$ jiratrack --pause
+Pausing timer at Tue Mar 11 2014 22:45:02 GMT-0700 (PDT)
+```
+
+### resume
+Resume the job timer.
+
+**Note:** Can only be used after using the --pause flag.
+
+```javascript
+$ jiratrack --start
+Started timer at Tue Mar 11 2014 22:30:04 GMT-0700 (PDT)
+
+$ jiratrack --pause
+Pausing timer at Tue Mar 11 2014 22:42:05 GMT-0700 (PDT)
+
+$ jiratrack --resume
+Resuming timer at Tue Mar 11 2014 22:43:13 GMT-0700 (PDT)
 ```
 
 ### stop
@@ -42,7 +85,7 @@ Stops the job timer and returns the tracked work time in Jira format e.g.
 
 ```javascript
 $ jiratrack --stop
-Ended timer at 2/18/2014;01:01:12
+Ended timer at Tue Mar 11 2014 22:19:18 GMT-0700 (PDT)
 Jira format: 2m
 ```
 
@@ -62,11 +105,15 @@ $ jiratrack --last
 ```
 
 ### set-time-path
-Sets the path that jiratrack should log out to e.g.
+Sets the path that jiratrack will store your log data to e.g.
 
 ```
 $ jiratrack --set-time-path=/Users/User/Desktop/tracker.json
 ```
+
+**Note:** By default, jiratrack will use **any** directory that you are currently in to store
+your log data. However, jiratrack will not save the location that you are currently in until you use
+this flag.
 
 ### set-default-path
 Sets the path that jiratrack should use to be the current working directory

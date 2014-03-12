@@ -55,7 +55,7 @@ if(args.start){
     jobs.data.push({
         startMs: Date.now(),
         endMs: -1,
-        pauseData: [],
+        pausesMs: [],
         elapsed: 0,
         jira: '',
         startTimeSlice: timeSlice,
@@ -71,8 +71,9 @@ if(args.start){
         jobs    = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
         lastJob = jobs.data[jobs.data.length - 1];
 
-        var totalPauses = lastJob.pauseData.length;
-        if(totalPauses > 0 && lastJob.pauseData[totalPauses - 1].pause){
+        var totalPauses = lastJob.pausesMs.length;
+        if(totalPauses > 0 && totalPauses%2){
+            // assuming pausesMs = [pause_n, resume_m, pause_m]
             throw new Error('Cannot pause again since you already pause your current task.');
         }
     } 
@@ -86,12 +87,7 @@ if(args.start){
     }
 
     print('Pausing timer at ' + getTimeSlice(new Date()));
-
-    lastJob.pauseData.push({
-        pause: true,
-        ms: Date.now()
-    });
-
+    lastJob.pausesMs.push(Date.now());
     fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
 } else if(args.resume){
     var jobs    = null,
@@ -99,10 +95,11 @@ if(args.start){
 
     try {
         jobs      = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-        lastJob   = jobs.data[jobs.data.length - 1],
-        lastPause = lastJob.pauseData[lastJob.pauseData.length - 1];
-
-        if(lastJob.pauseData.length === 0 || !lastPause.pause){
+        lastJob   = jobs.data[jobs.data.length - 1];
+        
+        var totalPauses = lastJob.pausesMs.length;
+        if(totalPauses === 0 || totalPauses%2 === 0){
+            // assuming pausesMs = [] or [pause_n, resume_m, pause_m, resume_p]
             throw new Error('Cannot resume if you didn\'t pause a task.');
         }
     } 
@@ -116,12 +113,7 @@ if(args.start){
     }
 
     print('Resuming timer at ' + getTimeSlice(new Date()));
-
-    lastJob.pauseData.push({
-        pause: false,
-        ms: Date.now()
-    });
-
+    lastJob.pausesMs.push(Date.now());
     fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
 } else if(args.stop){
     var jobs = {
@@ -151,22 +143,24 @@ if(args.start){
     
     lastJob.endMs        = Date.now();
     lastJob.endTimeSlice = getTimeSlice(new Date());
+    var pauses = lastJob.pausesMs.length;
 
     // check if there has been any pauses/resumes between when the task started (startMs) and finished (endMs)
-    if(lastJob.pauseData.length > 0){
+    if(pauses > 0){
 
-        for(var i = 0; i < lastJob.pauseData.length; i++){ 
-            if(lastJob.pauseData[i].pause && i === 0){
-                // assuming pauseData has the [pause, resume] combination, get the elapsed time from start (startMs) to first pause (pauseData[i].ms)
-                lastJob.elapsed += lastJob.pauseData[i].ms - lastJob.startMs;
+        // assuming pausesMs has the [pause, resume] combination ...
+        for(var i = 0; i < pauses; i++){ 
+            if(i === 0){
+                // get the elapsed time from start (startMs) to first pause (pausesMs[i].ms)
+                lastJob.elapsed += lastJob.pausesMs[i] - lastJob.startMs;
 
-            } else if(!lastJob.pauseData[i].pause && (i === lastJob.pauseData.length - 1)){
-                // if the last action was a resume (!pauseData[i].pause) in pauseData, then get the elapsed time from last resume to when the task finished (endMs)
-                lastJob.elapsed += lastJob.endMs - lastJob.pauseData[i].ms;
+            } else if(i%2 && (i === pauses - 1)){
+                // if the last action was a resume in pausesMs, then get the elapsed time from last resume to when the task finished (endMs)
+                lastJob.elapsed += lastJob.endMs - lastJob.pausesMs[i];
 
-            } else if(lastJob.pauseData[i].pause){
-                // get the elapsed time from when the task started resuming (pauseData[i - 1].ms) to the next pause (pauseData[i].ms)
-                lastJob.elapsed += lastJob.pauseData[i].ms - lastJob.pauseData[i - 1].ms;
+            } else if(i%2 === 0){ // assuming [pause, resume] combo, pause will land on the even index
+                // get the elapsed time from when the task started resuming (pausesMs[i - 1]) to the next pause (pausesMs[i])
+                lastJob.elapsed += lastJob.pausesMs[i] - lastJob.pausesMs[i - 1];
             }
         }
 
