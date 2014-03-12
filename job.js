@@ -228,14 +228,21 @@ if(args.start){
         print("\nFile inaccessible... Are you sure you have stored data?");
         return;
     }
-    print("\nHere is a list of all currently stored unfinished jobs:\n");
-    var i = 1;
+    var i = 1, unfinished = [];
     for(var job in jobs){
         if(!~jobs[job].endMs){
-            print(i++ + ". " + job);
+           unfinished.push(i++ + ". " + job);
         }
     }
-    print("");
+    if(unfinished.length){
+        print("\nHere is a list of all currently stored unfinished jobs:\n");
+        for(var job in unfinished){
+            print(unfinished[job]);
+        }
+        print("");
+    } else {
+        print("There are currently no unfinished jobs, good work!");
+    }
 } else {
     print('Please specify either --start, --pause, --resume, --stop, --clean or --last as a flag.');
     print('You may also edit the logging path with --set-time-path and --get-time-path');
