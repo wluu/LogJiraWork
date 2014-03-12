@@ -98,7 +98,7 @@ if(args.start){
         lastJob   = jobs.data[jobs.data.length - 1];
         
         var totalPauses = lastJob.pausesMs.length;
-        if(totalPauses === 0 || totalPauses%2 === 0){
+        if(!totalPauses || !(totalPauses%2)){
             // assuming pausesMs = [] or [pause_n, resume_m, pause_m, resume_p]
             throw new Error('Cannot resume if you didn\'t pause a task.');
         }
