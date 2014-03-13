@@ -32,64 +32,64 @@ Then, start using this module by running `jiratrack`.
 
 Commands
 ========
-Each command is an argument to job.js e.g.
-```javascript
-jiratrack --start
-```
 
-### start
+**Note:** The commands below will refer to <TICKET_NUM> as any jobs that you started (e.g. TIMOB-123, task1, etc).
+However, jiratrack is not case-sensitive, so ```jiratrack --start TIMOB-123``` is different from
+```jiratrack --start timob-123```.
+
+### --start <TICKET_NUM>
 Starts the job timer e.g.
 
 ```javascript
-$ jiratrack --start
+$ jiratrack --start TIMOB-1234
 Started timer at Tue Mar 11 2014 22:12:08 GMT-0700 (PDT)
 ```
 
-### pause
+### --pause <TICKET_NUM>
 Pause the job timer.
 
 **Note:** Can only be used after calling the --start flag or the --resume flag.
 
 ```javascript
-$ jiratrack --start
+$ jiratrack --start TIMOB-1234
 Started timer at Tue Mar 11 2014 22:30:04 GMT-0700 (PDT)
 
-$ jiratrack --pause
+$ jiratrack --pause TIMOB-1234
 Pausing timer at Tue Mar 11 2014 22:42:05 GMT-0700 (PDT)
 
-$ jiratrack --resume
+$ jiratrack --resume TIMOB-1234
 Resuming timer at Tue Mar 11 2014 22:43:13 GMT-0700 (PDT)
 
-$ jiratrack --pause
+$ jiratrack --pause TIMOB-1234
 Pausing timer at Tue Mar 11 2014 22:45:02 GMT-0700 (PDT)
 ```
 
-### resume
+### --resume <TICKET_NUM>
 Resume the job timer.
 
 **Note:** Can only be used after using the --pause flag.
 
 ```javascript
-$ jiratrack --start
+$ jiratrack --start TIMOB-1234
 Started timer at Tue Mar 11 2014 22:30:04 GMT-0700 (PDT)
 
-$ jiratrack --pause
+$ jiratrack --pause TIMOB-1234
 Pausing timer at Tue Mar 11 2014 22:42:05 GMT-0700 (PDT)
 
-$ jiratrack --resume
+$ jiratrack --resume TIMOB-1234
 Resuming timer at Tue Mar 11 2014 22:43:13 GMT-0700 (PDT)
 ```
 
-### stop
+### --stop <TICKET_NUM>
 Stops the job timer and returns the tracked work time in Jira format e.g.
 
 ```javascript
-$ jiratrack --stop
+$ jiratrack --stop TIMOB-1234
 Ended timer at Tue Mar 11 2014 22:19:18 GMT-0700 (PDT)
 Jira format: 2m
 ```
 
-### last
+### --last
 Shows the last finished job in JSON e.g.
 
 ```javascript
@@ -104,7 +104,7 @@ $ jiratrack --last
 }
 ```
 
-### set-time-path
+### --set-time-path
 Sets the path that jiratrack will store your log data to e.g.
 
 ```
@@ -115,7 +115,7 @@ $ jiratrack --set-time-path=/Users/User/Desktop/tracker.json
 your log data. However, jiratrack will not save the location that you are currently in until you use
 this flag.
 
-### set-default-path
+### --set-default-path
 Sets the path that jiratrack should use to be the current working directory
 
 ```
@@ -132,8 +132,27 @@ $ jiratrack --get-time-path
 Logs will be saved to /Users/iwhitfield/Desktop/time.json
 ```
 
-### get-time-path
-Returns the current path that jiratrack is using to log out to
+### --get-time-path
+Returns the current path that jiratrack is using to log out to.
 
-### clean
-Deletes the file that TIME_FILE is pointing to.
+```
+$ jiratrack --get-time-path
+Logs will be saved to /Users/iwhitfield/Desktop/time.json
+```
+
+### --list-jobs
+Returns a list of started jobs, but not finished jobs (--stop).
+
+```
+$ jiratrack --list-jobs
+
+Here is a list of all currently stored unfinished jobs:
+
+1. TIMOB-1234
+2. TIMOB-230
+3. TIMOB-9879
+
+```
+
+### --clean
+Deletes the file that --set-time-path is pointing to.

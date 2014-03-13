@@ -243,9 +243,52 @@ if(args.start){
     } else {
         print("There are currently no unfinished jobs, good work!");
     }
+} else if(args['help']){
+
+    print('Usage: jiratrack <command>\n');
+    print('Each <command> can be:\n');
+
+    // [cmd, description ...] combination
+    var cmdDesc = [
+        '--start <TICKET_NUM>',
+        'Starts the job timer.',
+
+        '--pause <TICKET_NUM>',
+        'Pause the job timer.',
+
+        '--resume <TICKET_NUM>',
+        'Resume the job timer.',
+
+        '--stop <TICKET_NUM>',
+        'Stops the job timer and returns the tracked work time in Jira format.',
+
+        '--last',
+        'Shows the last finished job in JSON.',
+
+        '--set-time-path',
+        'Sets the path that jiratrack will store your log data to.',
+
+        '--set-default-path',
+        'Sets the path that jiratrack should use to be the current working directory.',
+
+        '--get-time-path ',
+        'Returns the current path that jiratrack is using to log out to.',
+
+        '--list-jobs',
+        'Returns a list of started jobs, but not finished jobs.',
+
+        '--clean',
+        'Deletes the file that --set-time-path is pointing to.'
+    ];
+
+    for(var i = 0; i < cmdDesc.length; i+=2){
+        print('    ' + cmdDesc[i]);
+        print('        ' + cmdDesc[i + 1] + '\n');
+    }
+
+
 } else {
-    print('Please specify either --start, --pause, --resume, --stop, --clean or --last as a flag.');
-    print('You may also edit the logging path with --set-time-path and --get-time-path');
+    print('Use \'jiratrack \-\-help\' to see a list of commands.');
 }
 
 // returns a Jira ready format to log work e.g. 3h 30m
