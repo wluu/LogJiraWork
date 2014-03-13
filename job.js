@@ -231,7 +231,7 @@ if(args.start){
     var i = 1, unfinished = [];
     for(var job in jobs){
         if(!~jobs[job].endMs){
-           unfinished.push(i++ + ". " + job);
+           unfinished.push((i++) + ". " + job);
         }
     }
     if(unfinished.length){
