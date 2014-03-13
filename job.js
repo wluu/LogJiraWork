@@ -2,7 +2,8 @@
 var args = require('minimist')(process.argv.slice(2)),
     exec = require('shelljs').exec,
     fs   = require('fs'),
-    path = require('path');
+    path = require('path'),
+    print = console.log;
 
 var CONFIG_FILE = path.join(__dirname, 'config.js');
 
@@ -22,22 +23,19 @@ try {
 var TIME_FILE = config.path || path.join(process.cwd(), 'time.json');
 
 if(args.start){
-    var jobs = {
-        data: []
-    };
+    pleaseEnter('start');
+    var jobs = { };
 
     try {
         var j = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-            d = j.data[j.data.length - 1];
+            d = j[args.start];
 
-        if(d.endMs === -1){
+        if(d && !~d.endMs){
             throw new Error('Already started timer on ' + d.startTimeSlice);
         } else {
             jobs = j;
         }
-    }
-    catch(err){
-
+    } catch(err) {
         if(err.message === 'ENOENT, no such file or directory \'' + TIME_FILE + '\''){
             print(TIME_FILE + ' doesn\'t exist. Will create one.');
             fs.appendFileSync(TIME_FILE, '');
@@ -46,13 +44,13 @@ if(args.start){
             print(err.message);
             return;
         }
-
     }
 
     var timeSlice = getTimeSlice(new Date());
     print('Started timer at ' + timeSlice);
 
-    jobs.data.push({
+    jobs[args.start] = {
+        ticket: args.start, // Only here for the --last flag
         startMs: Date.now(),
         endMs: -1,
         pausesMs: [],
@@ -60,71 +58,74 @@ if(args.start){
         jira: '',
         startTimeSlice: timeSlice,
         endTimeSlice: ''
-    });
-
-    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
+    };
+    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs, null, 4));
 } else if(args.pause){
+    pleaseEnter('pause');
+
     var jobs    = null,
         lastJob = null;
 
     try {
         jobs    = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-        lastJob = jobs.data[jobs.data.length - 1];
+        lastJob = jobs[args.pause];
 
         var totalPauses = lastJob.pausesMs.length;
         if(totalPauses > 0 && totalPauses%2){
             // assuming pausesMs = [pause_n, resume_m, pause_m]
             throw new Error('Cannot pause again since you already pause your current task.');
         }
-    } 
-    catch(err){
+    } catch(err) {
         if(err.message === 'ENOENT, no such file or directory \'' + TIME_FILE + '\''){
-            print('Cannot pause if you didn\'t start a task.');    
+            print('Cannot pause if you didn\'t start a task.');
         } else {
-            print(err.message);    
+            print(err.message);
         }
         return;
     }
 
     print('Pausing timer at ' + getTimeSlice(new Date()));
     lastJob.pausesMs.push(Date.now());
-    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
+    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs, null, 4));
 } else if(args.resume){
+    pleaseEnter('resume');
+
     var jobs    = null,
         lastJob = null;
 
     try {
         jobs      = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-        lastJob   = jobs.data[jobs.data.length - 1];
-        
+        lastJob   = jobs[args.resume];
+
         var totalPauses = lastJob.pausesMs.length;
         if(!totalPauses || !(totalPauses%2)){
             // assuming pausesMs = [] or [pause_n, resume_m, pause_m, resume_p]
             throw new Error('Cannot resume if you didn\'t pause a task.');
         }
-    } 
-    catch(err){
+    } catch(err) {
         if(err.message === 'ENOENT, no such file or directory \'' + TIME_FILE + '\''){
-            print('Cannot resume if you didn\'t pause a task.');    
+            print('Cannot resume if you didn\'t pause a task.');
         } else {
-            print(err.message);    
+            print(err.message);
         }
         return;
     }
 
     print('Resuming timer at ' + getTimeSlice(new Date()));
     lastJob.pausesMs.push(Date.now());
-    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
+    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs, null, 4));
 } else if(args.stop){
+    pleaseEnter('stop');
+
     var jobs = {
         data: []
     };
 
     try {
         var j = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-            d = j.data[j.data.length - 1];
+            d = j[args.stop];
 
-        if(d.endMs !== -1){
+        if(d && ~d.endMs){
             throw new Error('Previous job finished. Run \'node job.js start\' to start another timer.');
         } else {
             jobs = j;
@@ -138,9 +139,8 @@ if(args.start){
         return;
     }
 
-    var lastJob = jobs.data.length - 1,
-        lastJob = jobs.data[lastJob];
-    
+    var lastJob = jobs[args.stop];
+
     lastJob.endMs        = Date.now();
     lastJob.endTimeSlice = getTimeSlice(new Date());
     var pauses = lastJob.pausesMs.length;
@@ -149,8 +149,8 @@ if(args.start){
     if(pauses > 0){
 
         // assuming pausesMs has the [pause, resume] combination ...
-        for(var i = 0; i < pauses; i++){ 
-            if(i === 0){
+        for(var i = 0; i < pauses; i++){
+            if(!i){
                 // get the elapsed time from start (startMs) to first pause (pausesMs[i].ms)
                 lastJob.elapsed += lastJob.pausesMs[i] - lastJob.startMs;
 
@@ -158,7 +158,7 @@ if(args.start){
                 // if the last action was a resume in pausesMs, then get the elapsed time from last resume to when the task finished (endMs)
                 lastJob.elapsed += lastJob.endMs - lastJob.pausesMs[i];
 
-            } else if(i%2 === 0){ // assuming [pause, resume] combo, pause will land on the even index
+            } else if(!(i%2)){ // assuming [pause, resume] combo, pause will land on the even index
                 // get the elapsed time from when the task started resuming (pausesMs[i - 1]) to the next pause (pausesMs[i])
                 lastJob.elapsed += lastJob.pausesMs[i] - lastJob.pausesMs[i - 1];
             }
@@ -170,25 +170,33 @@ if(args.start){
     }
 
     lastJob.jira = getJiraFormat(lastJob.elapsed);
-    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs));
+    fs.writeFileSync(TIME_FILE, JSON.stringify(jobs, null, 4));
 
     print('Ended timer at ' + lastJob.endTimeSlice);
     print('Jira format: ' + lastJob.jira);
 } else if(args.last) {
+
+    // This gets slightly different here
     try {
-        var jobs    = JSON.parse(fs.readFileSync(TIME_FILE, {encoding: 'utf8'})),
-            lastJob = jobs.data[jobs.data.length - 1];
+        var jobs = JSON.parse(fs.readFileSync(TIME_FILE, {
+            encoding:'utf8'
+        }));
+    } catch(e) {
+        print("\nFile inaccessible... Are you sure you have stored data?");
+        return;
+    }
 
-        print(JSON.stringify(lastJob, null, 4));
-
-    } catch(err) {
-
-        if(err.message === 'ENOENT, no such file or directory \'' + TIME_FILE + '\''){
-            print(TIME_FILE + ' doesn\'t exist. So .... nothing to show.');
-        } else {
-            print(err.message);
+    var ended = { endMs:0 };
+    for(var job in jobs){
+        if(jobs[job].endMs > ended.endMs){
+            ended = jobs[job];
         }
-
+    }
+    if(ended.endMs){
+        print("\nHere is the record of the last finished job:\n");
+        print(JSON.stringify(ended, null, 4));
+    } else {
+        print("Unable to find the last ended job.");
     }
 } else if(args.clean){
     // Unlink the stored file
@@ -211,6 +219,30 @@ if(args.start){
 } else if(args['set-default-path']) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({}, null, 4));
     print('The logging path has been changed to the current working directory.');
+} else if(args['list-jobs']){
+    try {
+        var jobs = JSON.parse(fs.readFileSync(TIME_FILE, {
+            encoding:'utf8'
+        }));
+    } catch(e) {
+        print("\nFile inaccessible... Are you sure you have stored data?");
+        return;
+    }
+    var i = 1, unfinished = [];
+    for(var job in jobs){
+        if(!~jobs[job].endMs){
+           unfinished.push((i++) + ". " + job);
+        }
+    }
+    if(unfinished.length){
+        print("\nHere is a list of all currently stored unfinished jobs:\n");
+        for(var job in unfinished){
+            print(unfinished[job]);
+        }
+        print("");
+    } else {
+        print("There are currently no unfinished jobs, good work!");
+    }
 } else {
     print('Please specify either --start, --pause, --resume, --stop, --clean or --last as a flag.');
     print('You may also edit the logging path with --set-time-path and --get-time-path');
@@ -219,16 +251,16 @@ if(args.start){
 // returns a Jira ready format to log work e.g. 3h 30m
 function getJiraFormat(ms){
     var x = ms / 1000;
-        // In case we need it
-        // seconds = Math.floor(x % 60);
-        x /= 60;
-        minutes = Math.round(x % 60);
-        x /= 60;
-        hours = Math.floor(x % 24);
-        x /= 24;
-        days = Math.floor(x % 7);
-        x /= 7;
-        weeks = Math.floor(x);
+    // In case we need it
+    // seconds = Math.floor(x % 60);
+    x /= 60;
+    minutes = Math.round(x % 60);
+    x /= 60;
+    hours = Math.floor(x % 24);
+    x /= 24;
+    days = Math.floor(x % 7);
+    x /= 7;
+    weeks = Math.floor(x);
 
     // Rounding normalization
     if(minutes == 60){
@@ -250,9 +282,9 @@ function getJiraFormat(ms){
 
 // Check if file is writable
 function canWrite(owner, inGroup, mode) {
-  return owner && (mode & 00200) || // User is owner and owner can write.
-         inGroup && (mode & 00020) || // User is in group and group can write.
-         (mode & 00002); // Anyone can write.
+    return owner && (mode & 00200) || // User is owner and owner can write.
+        inGroup && (mode & 00020) || // User is in group and group can write.
+        (mode & 00002); // Anyone can write.
 
 }
 
@@ -261,6 +293,10 @@ function getTimeSlice(date){
     return new Date(date).toString();
 }
 
-function print(s){
-    console.log(s);
+// Check params
+function pleaseEnter(action){
+    if(args[action] == true){
+        print("Please enter a JIRA ticket to " + action + ".");
+        process.exit();
+    }
 }
