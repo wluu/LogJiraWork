@@ -288,7 +288,7 @@ if(args.start){
 
 
 } else {
-    print('Use \'jiratrack \-\-help\' to see a list of commands.');
+    print('Use \'jiratrack --help\' to see a list of commands.');
 }
 
 // returns a Jira ready format to log work e.g. 3h 30m
