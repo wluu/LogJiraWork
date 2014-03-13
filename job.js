@@ -61,7 +61,7 @@ if(args.start){
     };
     fs.writeFileSync(TIME_FILE, JSON.stringify(jobs, null, 4));
 } else if(args.pause){
-    pleaseEnter('paus');
+    pleaseEnter('pause');
 
     var jobs    = null,
         lastJob = null;
